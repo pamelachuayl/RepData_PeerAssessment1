@@ -2,73 +2,113 @@
 
 
 ## Loading and preprocessing the data
-```{r}
-# 1. Load the data
-activityfile <- read.csv(unz("activity.zip", "activity.csv"))
+
+```r
+activityfile <- read.csv("activity.csv")
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r}
-# 1. Histogram of the total number of steps taken each day
+
+```r
 activityWithoutNA <- na.omit(activityfile)
 aggStepsEachDay <- aggregate(activityWithoutNA[,'steps'], list(activityWithoutNA[,'date']), sum)
 colnames(aggStepsEachDay) <- c('date','totalNumSteps')
-hist(aggStepsEachDay[,'totalNumSteps'],xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day")
+hist(aggStepsEachDay[,'totalNumSteps'],xlab="Date",ylab="Total number of steps",main="Histogram of total number of steps taken each day")
+```
 
-# 2. Mean and median total number of steps taken per day
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
+```r
 mean(activityWithoutNA[,'steps'])
+```
+
+```
+## [1] 37.38
+```
+
+```r
 median(activityWithoutNA[,'steps'])
 ```
-The mean of the total number of steps taken per day is 37.38 and the median is 0.
+
+```
+## [1] 0
+```
+
 
 ## What is the average daily activity pattern?
-```{r}
-# 1. Time series plot 
+
+```r
 agg <- aggregate(activityWithoutNA[,'steps'], list(activityWithoutNA[,'interval']), mean)
 colnames(agg) <- c('interval', 'avgSteps')
 plot(agg$interval,agg$avgSteps,type="l",xlab="Interval",ylab="Avg number of steps",main="Time series plot of avg number of steps for each interval")
+```
 
-# 5-minute interval with the maximum number of steps
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+```r
 agg[which(agg$avgSteps == max(agg[,'avgSteps'])),]
+```
+
+```
+##     interval avgSteps
+## 104      835    206.2
 ```
 The 835th interval contains the maximum number of steps.
 
 ## Imputing missing values
-```{r}
-# 1. Total number of missing values in dataset
+
+```r
 sum(is.na(activityfile))
+```
 
-# 2. Fill in missing values in dataset and 3. Create new dataset with missing data filled in
+```
+## [1] 2304
+```
 
-# Plan is to replace NA's with the mean for that particular 5-minute interval, as stored in agg file in above step
+```r
+# Replace NA's with the mean for that 5-minute interval, as stored in agg file
 activityImputMissingVal <- activityfile
-for(i in 1:nrow(activityImputMissingVal)){
+for(i in 1:nrow(activityfile)){
   if(is.na(activityImputMissingVal[i,'steps'])){
     interval <- activityImputMissingVal[i,'interval']
     activityImputMissingVal[i,'steps'] = agg[which(agg$interval == interval),'avgSteps']
   }
 }
 
-# 4. Histogram of total number of steps taken each day
-aggActivityImputMissingVal <- aggregate(activityImputMissingVal[,'steps'], list(activityImputMissingVal[,'date']), sum)
-colnames(aggActivityImputMissingVal) <- c('date', 'totalNumSteps')
-hist(aggActivityImputMissingVal[,'totalNumSteps'],xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day number of steps for each interval with missing values filled")
-mean(aggActivityImputMissingVal[,'totalNumSteps'])
-median(aggActivityImputMissingVal[,'totalNumSteps'])
+hist(activityImputMissingVal[,'steps'],xlab="Interval",ylab="Avg number of steps",main="Time series plot of avg number of steps for each interval with missing values filled")
 ```
-The mean and median remain the same as before since we are using the averaged values to fill in the missing data. Imputing missing data will change the histogram slightly, i.e. increase some of the frequencies where previously missing but the mean and median do not change.
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
+
+```r
+mean(activityImputMissingVal[,'steps'])
+```
+
+```
+## [1] 37.38
+```
+
+```r
+median(activityImputMissingVal[,'steps'])
+```
+
+```
+## [1] 0
+```
+Mean and median remain the same.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
-# 1. Create new factor variable
+
+
+```r
 dayOfWeek <- weekdays(as.Date(activityImputMissingVal[,'date']))
 weekDayEnd <- ifelse(dayOfWeek=='Saturday' | dayOfWeek=='Saturday', 'Weekend', 'Weekday')
 activityImputMissingVal['dayType'] <- weekDayEnd
-
-# 2. Panel plot
 aggWeekdayEnd <- aggregate(activityImputMissingVal[,'steps'], list(activityImputMissingVal[,'interval'],activityImputMissingVal[,'dayType']), mean)
 colnames(aggWeekdayEnd) <- c('interval','dayType','steps')
 library(lattice)
 xyplot(steps ~ interval | dayType, data=aggWeekdayEnd, layout=c(1,2),type='l', xlab="Interval", ylab="Number of steps", main="Activity patterns between weekdays and weekends")
 ```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
