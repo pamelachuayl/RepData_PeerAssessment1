@@ -7,20 +7,19 @@
 activityfile <- read.csv(unz("activity.zip", "activity.csv"))
 ```
 
-
 ## What is mean total number of steps taken per day?
 ```{r}
 # 1. Histogram of the total number of steps taken each day
 activityWithoutNA <- na.omit(activityfile)
 aggStepsEachDay <- aggregate(activityWithoutNA[,'steps'], list(activityWithoutNA[,'date']), sum)
 colnames(aggStepsEachDay) <- c('date','totalNumSteps')
-hist(aggStepsEachDay[,'totalNumSteps'],xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day")
+hist(aggStepsEachDay[,'totalNumSteps'],breaks=10,xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day")
 
 # 2. Mean and median total number of steps taken per day
-mean(activityWithoutNA[,'steps'])
-median(activityWithoutNA[,'steps'])
+mean(aggStepsEachDay[,'totalNumSteps'])
+median(aggStepsEachDay[,'totalNumSteps'])
 ```
-The mean of the total number of steps taken per day is 37.38 and the median is 0.
+The mean of the total number of steps taken per day is 10766 (rounded to whole number) and the median is 10765.
 
 ## What is the average daily activity pattern?
 ```{r}
@@ -32,7 +31,7 @@ plot(agg$interval,agg$avgSteps,type="l",xlab="Interval",ylab="Avg number of step
 # 5-minute interval with the maximum number of steps
 agg[which(agg$avgSteps == max(agg[,'avgSteps'])),]
 ```
-The 835th interval contains the maximum number of steps.
+The 835 minutes interval contains the maximum number of steps.
 
 ## Imputing missing values
 ```{r}
@@ -53,11 +52,11 @@ for(i in 1:nrow(activityImputMissingVal)){
 # 4. Histogram of total number of steps taken each day
 aggActivityImputMissingVal <- aggregate(activityImputMissingVal[,'steps'], list(activityImputMissingVal[,'date']), sum)
 colnames(aggActivityImputMissingVal) <- c('date', 'totalNumSteps')
-hist(aggActivityImputMissingVal[,'totalNumSteps'],xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day number of steps for each interval with missing values filled")
+hist(aggActivityImputMissingVal[,'totalNumSteps'],breaks=10,xlab="Number of steps",ylab="Frequency",main="Histogram of total number of steps taken each day")
 mean(aggActivityImputMissingVal[,'totalNumSteps'])
 median(aggActivityImputMissingVal[,'totalNumSteps'])
 ```
-The mean and median remain the same as before since we are using the averaged values to fill in the missing data. Imputing missing data will change the histogram slightly, i.e. increase some of the frequencies where previously missing but the mean and median do not change.
+The mean remains the same as before since we are using the averaged values to fill in the missing data. The median is slightly different, now it is the same value as the mean value.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r}
@@ -72,3 +71,6 @@ colnames(aggWeekdayEnd) <- c('interval','dayType','steps')
 library(lattice)
 xyplot(steps ~ interval | dayType, data=aggWeekdayEnd, layout=c(1,2),type='l', xlab="Interval", ylab="Number of steps", main="Activity patterns between weekdays and weekends")
 ```
+
+
+The peaks for the number of steps seem to be at the same intervals for both weekends and weekdays but there are larger peaks (more number of steps taken) during the weekends.
